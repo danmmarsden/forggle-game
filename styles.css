@@ -416,13 +416,13 @@ h2 {
 }
 
 .slot-peg.hint-correct {
-  outline: 4px solid var(--success);
-  outline-offset: 3px;
+  outline: 3px solid var(--success);
+  outline-offset: 2px;
 }
 
 .slot-peg.hint-misplaced {
-  outline: 4px solid var(--warning);
-  outline-offset: 3px;
+  outline: 3px solid var(--warning);
+  outline-offset: 2px;
 }
 
 .feedback {
@@ -654,7 +654,7 @@ h2 {
   .slots {
     grid-area: slots;
     grid-template-columns: repeat(4, var(--slot-size));
-    gap: 6px;
+    gap: 12px;
   }
 
   .feedback {
@@ -690,7 +690,7 @@ h2 {
   }
 
   .slots {
-    gap: 5px;
+    gap: 12px;
   }
 
   .secret-pegs {
