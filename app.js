@@ -89,6 +89,11 @@
     solved: false
   };
 
+  const dragState = {
+    active: null,
+    suppressNextClick: false
+  };
+
   function init() {
     renderPalette();
     renderGame();
@@ -118,9 +123,16 @@
       token.title = colour.name;
 
       token.addEventListener("click", () => {
+        if (dragState.suppressNextClick) {
+          dragState.suppressNextClick = false;
+          return;
+        }
+
         state.selectedColour = state.selectedColour === colour.id ? null : colour.id;
         renderPaletteSelection();
       });
+
+      token.addEventListener("pointerdown", (event) => startPointerDrag(event, colour.id, token));
 
       token.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData("text/plain", colour.id);
@@ -199,7 +211,7 @@
 
   function createGuessRow({ turnNumber, guess, marks, active }) {
     const row = document.createElement("div");
-    row.className = `guess-row${active ? " is-active" : ""}`;
+    row.className = `guess-row${active ? " is-active" : " is-locked"}`;
 
     const index = document.createElement("span");
     index.className = "turn-index";
@@ -239,6 +251,10 @@
 
     row.appendChild(slots);
     row.appendChild(createFeedback(marks));
+
+    if (!active) {
+      return row;
+    }
 
     const submit = document.createElement("button");
     submit.className = "icon-button submit-button";
@@ -330,6 +346,141 @@
     state.currentGuess[slotIndex] = colourId;
     state.selectedColour = colourId;
     renderGame();
+  }
+
+  function startPointerDrag(event, colourId, source) {
+    if (event.button !== 0 || state.solved) {
+      return;
+    }
+
+    dragState.active = {
+      colourId,
+      ghost: null,
+      moved: false,
+      overSlot: null,
+      pointerId: event.pointerId,
+      source,
+      startX: event.clientX,
+      startY: event.clientY
+    };
+
+    if (source.setPointerCapture) {
+      source.setPointerCapture(event.pointerId);
+    }
+
+    source.addEventListener("pointermove", movePointerDrag);
+    source.addEventListener("pointerup", finishPointerDrag);
+    source.addEventListener("pointercancel", cancelPointerDrag);
+  }
+
+  function movePointerDrag(event) {
+    const active = dragState.active;
+    if (!active || active.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const distance = Math.hypot(event.clientX - active.startX, event.clientY - active.startY);
+    if (!active.moved && distance < 7) {
+      return;
+    }
+
+    event.preventDefault();
+    active.moved = true;
+
+    if (!active.ghost) {
+      active.ghost = createDragGhost(active.colourId);
+      document.body.classList.add("is-dragging-colour");
+      active.source.classList.add("is-dragging");
+    }
+
+    active.ghost.style.transform = `translate(${event.clientX - 24}px, ${event.clientY - 24}px)`;
+    updatePointerDropTarget(event.clientX, event.clientY);
+  }
+
+  function finishPointerDrag(event) {
+    const active = dragState.active;
+    if (!active || active.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragState.suppressNextClick = true;
+
+    if (active.moved && active.overSlot) {
+      const slotIndex = Number(active.overSlot.dataset.slot);
+      state.currentGuess[slotIndex] = active.colourId;
+      state.selectedColour = active.colourId;
+      cleanupPointerDrag();
+      renderGame();
+      return;
+    }
+
+    if (!active.moved) {
+      state.selectedColour = state.selectedColour === active.colourId ? null : active.colourId;
+      renderPaletteSelection();
+    }
+
+    cleanupPointerDrag();
+  }
+
+  function cancelPointerDrag(event) {
+    if (!dragState.active || dragState.active.pointerId !== event.pointerId) {
+      return;
+    }
+
+    cleanupPointerDrag();
+  }
+
+  function createDragGhost(colourId) {
+    const colour = colourById(colourId);
+    const ghost = document.createElement("span");
+    ghost.className = "drag-ghost";
+    ghost.style.setProperty("--peg", colour.hex);
+    ghost.setAttribute("aria-hidden", "true");
+    document.body.appendChild(ghost);
+    return ghost;
+  }
+
+  function updatePointerDropTarget(x, y) {
+    const active = dragState.active;
+    const target = document.elementFromPoint(x, y);
+    const slot = target ? target.closest(".guess-row.is-active .slot") : null;
+
+    if (active.overSlot && active.overSlot !== slot) {
+      active.overSlot.classList.remove("is-over");
+    }
+
+    active.overSlot = slot && !slot.disabled ? slot : null;
+
+    if (active.overSlot) {
+      active.overSlot.classList.add("is-over");
+    }
+  }
+
+  function cleanupPointerDrag() {
+    const active = dragState.active;
+    if (!active) {
+      return;
+    }
+
+    active.source.removeEventListener("pointermove", movePointerDrag);
+    active.source.removeEventListener("pointerup", finishPointerDrag);
+    active.source.removeEventListener("pointercancel", cancelPointerDrag);
+
+    if (active.source.hasPointerCapture && active.source.hasPointerCapture(active.pointerId)) {
+      active.source.releasePointerCapture(active.pointerId);
+    }
+
+    if (active.overSlot) {
+      active.overSlot.classList.remove("is-over");
+    }
+
+    if (active.ghost) {
+      active.ghost.remove();
+    }
+
+    active.source.classList.remove("is-dragging");
+    document.body.classList.remove("is-dragging-colour");
+    dragState.active = null;
   }
 
   function clearCurrentGuess() {

@@ -169,7 +169,8 @@ h2 {
 
 .peg,
 .slot-peg,
-.colour-token::before {
+.colour-token::before,
+.drag-ghost {
   border-radius: 999px;
   background:
     radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.9) 0 12%, rgba(255, 255, 255, 0.12) 13% 26%, transparent 27%),
@@ -191,11 +192,15 @@ h2 {
   box-shadow: none;
   cursor: grab;
   position: relative;
-  touch-action: manipulation;
+  touch-action: none;
 }
 
 .colour-token:active {
   cursor: grabbing;
+}
+
+.colour-token.is-dragging {
+  opacity: 0.62;
 }
 
 .colour-token.is-selected,
@@ -338,8 +343,8 @@ h2 {
 }
 
 .slot-peg {
-  width: 46px;
-  height: 46px;
+  width: calc(var(--slot-size) - 8px);
+  height: calc(var(--slot-size) - 8px);
 }
 
 .feedback {
@@ -459,6 +464,20 @@ h2 {
   line-height: 1.4;
 }
 
+.drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+}
+
+.is-dragging-colour {
+  user-select: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -484,7 +503,7 @@ h2 {
 
 @media (max-width: 760px) {
   :root {
-    --slot-size: 48px;
+    --slot-size: 40px;
   }
 
   .app-shell {
@@ -515,78 +534,154 @@ h2 {
     min-width: 82px;
   }
 
+  .palette-band {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    margin-top: 10px;
+    padding: 8px;
+    box-shadow: 0 10px 28px rgba(24, 34, 46, 0.16);
+  }
+
   .colour-tray {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(8, minmax(30px, 1fr));
+    gap: 5px;
+  }
+
+  .colour-token {
+    min-height: 42px;
+    border-width: 1px;
+  }
+
+  .colour-token::before {
+    width: 28px;
+    height: 28px;
   }
 
   .game-layout {
-    padding: 10px;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 8px;
   }
 
   .secret-row {
     grid-template-columns: 1fr;
     gap: 8px;
+    min-height: 0;
+    padding: 8px;
+  }
+
+  .board {
+    gap: 6px;
+    margin-top: 8px;
   }
 
   .guess-row {
-    grid-template-columns: 34px 1fr 88px;
+    grid-template-columns: 28px max-content minmax(58px, 1fr);
     grid-template-areas:
-      "turn slots slots"
-      "turn feedback submit"
-      "turn feedback clear";
+      "turn slots feedback";
+    min-height: 0;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .guess-row.is-active {
+    grid-template-columns: 28px max-content 36px 36px;
+    grid-template-areas:
+      "turn slots submit clear"
+      ". feedback feedback feedback";
   }
 
   .turn-index {
     grid-area: turn;
-    width: 30px;
-    height: 100%;
-    min-height: 88px;
+    align-self: center;
+    width: 26px;
+    height: 26px;
+    min-height: 0;
+    font-size: 0.78rem;
   }
 
   .slots {
     grid-area: slots;
     grid-template-columns: repeat(4, var(--slot-size));
+    gap: 6px;
   }
 
   .feedback {
     grid-area: feedback;
     justify-content: start;
+    min-width: 58px;
+  }
+
+  .mark {
+    width: 18px;
+    height: 18px;
+    font-size: 0.74rem;
   }
 
   .submit-button {
     grid-area: submit;
-    width: 88px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.12rem;
   }
 
   .clear-button {
     grid-area: clear;
-    width: 88px;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .score-panel {
+    padding: 10px;
   }
 }
 
 @media (max-width: 430px) {
   :root {
-    --slot-size: 42px;
+    --slot-size: 36px;
   }
 
-  .slots,
+  .slots {
+    gap: 5px;
+  }
+
   .secret-pegs {
     gap: 7px;
   }
 
-  .slot-peg {
-    width: 36px;
-    height: 36px;
+  .guess-row {
+    grid-template-columns: 24px max-content minmax(48px, 1fr);
+    gap: 5px;
+    padding: 5px;
   }
 
-  .guess-row {
-    grid-template-columns: 30px 1fr 74px;
-    gap: 8px;
-    padding: 8px;
+  .guess-row.is-active {
+    grid-template-columns: 24px max-content 34px 34px;
   }
 
   .submit-button,
   .clear-button {
-    width: 74px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .turn-index {
+    width: 24px;
+    height: 24px;
+  }
+
+  .colour-tray {
+    gap: 4px;
+  }
+
+  .colour-token {
+    min-height: 38px;
+  }
+
+  .colour-token::before {
+    width: 25px;
+    height: 25px;
   }
 }
