@@ -54,6 +54,9 @@ button {
 .topbar {
   display: grid;
   grid-template-columns: minmax(max-content, 1fr) auto;
+  grid-template-areas:
+    "brand difficulty"
+    "summary summary";
   align-items: center;
   justify-content: stretch;
   gap: 20px;
@@ -63,6 +66,7 @@ button {
 }
 
 .brand-block {
+  grid-area: brand;
   min-width: 0;
 }
 
@@ -97,7 +101,7 @@ h2 {
 }
 
 .top-actions {
-  grid-column: 1 / -1;
+  grid-area: summary;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -178,9 +182,12 @@ h2 {
 }
 
 .difficulty-control {
+  grid-area: difficulty;
   display: inline-flex;
   align-items: center;
   justify-self: end;
+  width: max-content;
+  max-width: 100%;
   min-height: 46px;
   padding: 3px;
   border: 1px solid var(--line);
@@ -504,8 +511,12 @@ h2 {
 
   .topbar {
     grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand difficulty"
+      "summary summary";
     align-items: start;
-    gap: 12px;
+    column-gap: 10px;
+    row-gap: 12px;
     padding: 14px;
   }
 
@@ -515,8 +526,7 @@ h2 {
 
   .top-actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
     justify-content: stretch;
     align-items: stretch;
@@ -538,8 +548,10 @@ h2 {
   }
 
   .difficulty-control {
+    width: auto;
     min-height: 42px;
     align-self: start;
+    flex: 0 0 auto;
   }
 
   .difficulty-button {
@@ -549,23 +561,22 @@ h2 {
   }
 
   .text-button {
-    width: 46px;
-    min-width: 46px;
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
     height: auto;
-    min-height: 48px;
+    min-height: 40px;
     padding: 0;
   }
 
   .text-button span:last-child {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 
   .palette-band {
@@ -588,8 +599,13 @@ h2 {
   }
 
   .colour-token::before {
-    width: 32px;
-    height: 32px;
+    width: var(--slot-size);
+    height: var(--slot-size);
+  }
+
+  .slot-peg {
+    width: var(--slot-size);
+    height: var(--slot-size);
   }
 
   .game-layout {
@@ -712,29 +728,19 @@ h2 {
   }
 
   .colour-token::before {
-    width: 34px;
-    height: 34px;
+    width: var(--slot-size);
+    height: var(--slot-size);
   }
 }
 
 @media (max-width: 360px) {
-  .top-actions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  h1 {
+    font-size: 1.65rem;
   }
 
-  .text-button {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-height: 38px;
-  }
-
-  .text-button span:last-child {
-    position: static;
-    width: auto;
-    height: auto;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
+  .difficulty-button {
+    min-width: 58px;
+    padding: 0 7px;
+    font-size: 0.86rem;
   }
 }
