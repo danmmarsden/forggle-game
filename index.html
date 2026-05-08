@@ -14,9 +14,13 @@
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div>
+        <div class="brand-block">
           <p class="eyebrow">Colour code</p>
           <h1>Forggle</h1>
+        </div>
+        <div class="difficulty-control" aria-label="Difficulty" role="group">
+          <button class="difficulty-button is-active" type="button" data-difficulty="medium">Medium</button>
+          <button class="difficulty-button" type="button" data-difficulty="hard">Hard</button>
         </div>
         <div class="top-actions" aria-label="Game summary">
           <div class="stat">
@@ -30,10 +34,6 @@
           <div class="stat score-stat" data-best-difficulty="hard">
             <span>Hard Best</span>
             <strong data-best-score="hard">--</strong>
-          </div>
-          <div class="difficulty-control" aria-label="Difficulty" role="group">
-            <button class="difficulty-button is-active" type="button" data-difficulty="medium">Medium</button>
-            <button class="difficulty-button" type="button" data-difficulty="hard">Hard</button>
           </div>
           <button class="icon-button text-button" id="new-game" type="button">
             <span aria-hidden="true">&#8635;</span>
