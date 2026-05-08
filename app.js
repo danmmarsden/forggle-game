@@ -13,7 +13,9 @@
   ];
 
   const CODE_LENGTH = 4;
-  const STORAGE_KEY = "mastermind-best-score-v1";
+  const DEFAULT_DIFFICULTY = "medium";
+  const DIFFICULTIES = new Set(["medium", "hard"]);
+  const STORAGE_KEY_PREFIX = "mastermind-best-score-v1";
 
   function createSecret(length = CODE_LENGTH) {
     return Array.from({ length }, () => {
@@ -75,10 +77,12 @@
     secretPegs: document.querySelector("#secret-pegs"),
     turnCount: document.querySelector("#turn-count"),
     bestScore: document.querySelector("#best-score"),
+    difficultyButtons: document.querySelectorAll("[data-difficulty]"),
     newGame: document.querySelector("#new-game")
   };
 
   const state = {
+    difficulty: DEFAULT_DIFFICULTY,
     secret: createSecret(),
     currentGuess: Array(CODE_LENGTH).fill(null),
     selectedColour: null,
@@ -95,6 +99,9 @@
     renderPalette();
     renderGame();
     elements.newGame.addEventListener("click", startNewGame);
+    elements.difficultyButtons.forEach((button) => {
+      button.addEventListener("click", () => setDifficulty(button.dataset.difficulty));
+    });
   }
 
   function startNewGame() {
@@ -104,6 +111,15 @@
     state.turns = [];
     state.solved = false;
     renderGame();
+  }
+
+  function setDifficulty(difficulty) {
+    if (!DIFFICULTIES.has(difficulty) || state.difficulty === difficulty) {
+      return;
+    }
+
+    state.difficulty = difficulty;
+    startNewGame();
   }
 
   function renderPalette() {
@@ -149,10 +165,19 @@
 
   function renderGame() {
     renderPaletteSelection();
+    renderDifficultySelection();
     renderSecret();
     renderBoard();
     elements.turnCount.textContent = String(state.turns.length + (state.solved ? 0 : 1));
     elements.bestScore.textContent = readBestScore();
+  }
+
+  function renderDifficultySelection() {
+    elements.difficultyButtons.forEach((button) => {
+      const isActive = button.dataset.difficulty === state.difficulty;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
   }
 
   function renderSecret() {
@@ -223,8 +248,13 @@
         peg.className = "slot-peg";
         peg.style.setProperty("--peg", colour.hex);
         peg.setAttribute("aria-hidden", "true");
+
+        if (!active && state.difficulty === "medium") {
+          applyMediumHint(peg, slot, marks[slotIndex]);
+        }
+
         slot.appendChild(peg);
-        slot.setAttribute("aria-label", `Slot ${slotIndex + 1}, ${colour.name}`);
+        slot.setAttribute("aria-label", createSlotLabel(slotIndex, colour.name, marks[slotIndex], active));
       }
 
       if (active) {
@@ -265,6 +295,37 @@
     row.appendChild(clear);
 
     return row;
+  }
+
+  function createSlotLabel(slotIndex, colourName, mark, active) {
+    const label = `Slot ${slotIndex + 1}, ${colourName}`;
+
+    if (active || state.difficulty !== "medium") {
+      return label;
+    }
+
+    if (mark === "check") {
+      return `${label}, correct place`;
+    }
+
+    if (mark === "misplaced") {
+      return `${label}, correct colour, wrong place`;
+    }
+
+    return label;
+  }
+
+  function applyMediumHint(peg, slot, mark) {
+    if (mark === "check") {
+      peg.classList.add("hint-correct");
+      slot.dataset.hint = "correct";
+      return;
+    }
+
+    if (mark === "misplaced") {
+      peg.classList.add("hint-misplaced");
+      slot.dataset.hint = "misplaced";
+    }
   }
 
   function createFeedback(marks) {
@@ -504,7 +565,7 @@
 
   function readBestScore() {
     try {
-      const best = window.localStorage.getItem(STORAGE_KEY);
+      const best = window.localStorage.getItem(bestScoreKey());
       return best ? best : "--";
     } catch (error) {
       return "--";
@@ -513,13 +574,18 @@
 
   function saveBestScore(turns) {
     try {
-      const current = Number(window.localStorage.getItem(STORAGE_KEY));
+      const key = bestScoreKey();
+      const current = Number(window.localStorage.getItem(key));
       if (!current || turns < current) {
-        window.localStorage.setItem(STORAGE_KEY, String(turns));
+        window.localStorage.setItem(key, String(turns));
       }
     } catch (error) {
       // Private browsing modes can block storage; the game should still play.
     }
+  }
+
+  function bestScoreKey() {
+    return `${STORAGE_KEY_PREFIX}-${state.difficulty}`;
   }
 
   init();
