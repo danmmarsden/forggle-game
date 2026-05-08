@@ -75,10 +75,7 @@
     secretPegs: document.querySelector("#secret-pegs"),
     turnCount: document.querySelector("#turn-count"),
     bestScore: document.querySelector("#best-score"),
-    newGame: document.querySelector("#new-game"),
-    scoreList: document.querySelector("#score-list"),
-    status: document.querySelector("#status-message"),
-    gameState: document.querySelector("#game-state")
+    newGame: document.querySelector("#new-game")
   };
 
   const state = {
@@ -154,17 +151,8 @@
     renderPaletteSelection();
     renderSecret();
     renderBoard();
-    renderScore();
     elements.turnCount.textContent = String(state.turns.length + (state.solved ? 0 : 1));
     elements.bestScore.textContent = readBestScore();
-    elements.gameState.textContent = state.solved ? "Solved" : "In play";
-
-    if (state.solved) {
-      const turns = state.turns.length;
-      elements.status.textContent = `Solved in ${turns} ${plural(turns, "turn", "turns")}.`;
-    } else {
-      elements.status.textContent = `Turn ${state.turns.length + 1}`;
-    }
   }
 
   function renderSecret() {
@@ -494,7 +482,6 @@
     }
 
     if (!isCurrentGuessComplete()) {
-      elements.status.textContent = "Fill all four spaces.";
       return;
     }
 
@@ -513,41 +500,6 @@
 
   function isCurrentGuessComplete() {
     return state.currentGuess.every(Boolean);
-  }
-
-  function renderScore() {
-    elements.scoreList.innerHTML = "";
-
-    if (state.turns.length === 0) {
-      const empty = document.createElement("li");
-      empty.innerHTML = '<span class="turn-index">0</span><span class="mini-row">No turns recorded</span>';
-      elements.scoreList.appendChild(empty);
-      return;
-    }
-
-    state.turns.forEach((turn, index) => {
-      const checks = countMarks(turn.marks, "check");
-      const misplaced = countMarks(turn.marks, "misplaced");
-      const item = document.createElement("li");
-
-      const number = document.createElement("span");
-      number.className = "turn-index";
-      number.textContent = String(index + 1);
-
-      const summary = document.createElement("span");
-      summary.className = "mini-row";
-
-      const text = document.createElement("span");
-      text.innerHTML = `${checks} &#10003; &middot; ${misplaced} X`;
-
-      const marks = document.createElement("span");
-      marks.className = "mini-marks";
-      visibleFeedbackMarks(turn.marks).forEach((mark) => marks.appendChild(createMark(mark)));
-
-      summary.append(text, marks);
-      item.append(number, summary);
-      elements.scoreList.appendChild(item);
-    });
   }
 
   function readBestScore() {
