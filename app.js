@@ -76,7 +76,8 @@
     board: document.querySelector("#board"),
     secretPegs: document.querySelector("#secret-pegs"),
     turnCount: document.querySelector("#turn-count"),
-    bestScore: document.querySelector("#best-score"),
+    bestScores: document.querySelectorAll("[data-best-score]"),
+    bestScoreStats: document.querySelectorAll("[data-best-difficulty]"),
     difficultyButtons: document.querySelectorAll("[data-difficulty]"),
     newGame: document.querySelector("#new-game")
   };
@@ -169,7 +170,7 @@
     renderSecret();
     renderBoard();
     elements.turnCount.textContent = String(state.turns.length + (state.solved ? 0 : 1));
-    elements.bestScore.textContent = readBestScore();
+    renderBestScores();
   }
 
   function renderDifficultySelection() {
@@ -177,6 +178,16 @@
       const isActive = button.dataset.difficulty === state.difficulty;
       button.classList.toggle("is-active", isActive);
       button.setAttribute("aria-pressed", String(isActive));
+    });
+  }
+
+  function renderBestScores() {
+    elements.bestScores.forEach((score) => {
+      score.textContent = readBestScore(score.dataset.bestScore);
+    });
+
+    elements.bestScoreStats.forEach((stat) => {
+      stat.classList.toggle("is-target", stat.dataset.bestDifficulty === state.difficulty);
     });
   }
 
@@ -563,9 +574,9 @@
     return state.currentGuess.every(Boolean);
   }
 
-  function readBestScore() {
+  function readBestScore(difficulty = state.difficulty) {
     try {
-      const best = window.localStorage.getItem(bestScoreKey());
+      const best = window.localStorage.getItem(bestScoreKey(difficulty));
       return best ? best : "--";
     } catch (error) {
       return "--";
@@ -574,7 +585,7 @@
 
   function saveBestScore(turns) {
     try {
-      const key = bestScoreKey();
+      const key = bestScoreKey(state.difficulty);
       const current = Number(window.localStorage.getItem(key));
       if (!current || turns < current) {
         window.localStorage.setItem(key, String(turns));
@@ -584,8 +595,8 @@
     }
   }
 
-  function bestScoreKey() {
-    return `${STORAGE_KEY_PREFIX}-${state.difficulty}`;
+  function bestScoreKey(difficulty) {
+    return `${STORAGE_KEY_PREFIX}-${difficulty}`;
   }
 
   init();

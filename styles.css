@@ -109,6 +109,19 @@ h2 {
   background: var(--surface-raised);
 }
 
+.score-stat {
+  min-width: 112px;
+}
+
+.stat.is-target {
+  border-color: rgba(138, 180, 248, 0.68);
+  background: rgba(138, 180, 248, 0.12);
+}
+
+.stat.is-target span {
+  color: var(--accent);
+}
+
 .stat span {
   color: var(--muted);
   font-size: 0.78rem;
