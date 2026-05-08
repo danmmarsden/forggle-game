@@ -501,7 +501,7 @@ h2 {
 
 @media (max-width: 760px) {
   :root {
-    --slot-size: 40px;
+    --slot-size: 44px;
   }
 
   .app-shell {
@@ -686,7 +686,7 @@ h2 {
 
 @media (max-width: 430px) {
   :root {
-    --slot-size: 36px;
+    --slot-size: 44px;
   }
 
   .slots {
@@ -734,6 +734,10 @@ h2 {
 }
 
 @media (max-width: 360px) {
+  :root {
+    --slot-size: 40px;
+  }
+
   h1 {
     font-size: 1.65rem;
   }
