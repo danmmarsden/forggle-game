@@ -14,6 +14,7 @@
   --warning: #fdd663;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
   --slot-size: 58px;
+  --code-length: 4;
   font-family: "Google Sans Text", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
   background: var(--page);
@@ -314,7 +315,7 @@ h2 {
 
 .secret-pegs {
   display: grid;
-  grid-template-columns: repeat(4, var(--slot-size));
+  grid-template-columns: repeat(var(--code-length), var(--slot-size));
   gap: 10px;
 }
 
@@ -374,7 +375,7 @@ h2 {
 
 .slots {
   display: grid;
-  grid-template-columns: repeat(4, var(--slot-size));
+  grid-template-columns: repeat(var(--code-length), var(--slot-size));
   gap: 10px;
 }
 
@@ -526,7 +527,7 @@ h2 {
 
   .top-actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     justify-content: stretch;
     align-items: stretch;
@@ -555,9 +556,10 @@ h2 {
   }
 
   .difficulty-button {
-    min-width: 68px;
+    min-width: 0;
     min-height: 34px;
-    padding: 0 9px;
+    padding: 0 8px;
+    font-size: 0.82rem;
   }
 
   .text-button {
@@ -653,8 +655,26 @@ h2 {
 
   .slots {
     grid-area: slots;
-    grid-template-columns: repeat(4, var(--slot-size));
+    grid-template-columns: repeat(var(--code-length), var(--slot-size));
     gap: 12px;
+  }
+
+  :root[data-code-length="5"] .guess-row {
+    grid-template-columns: 28px max-content minmax(0, 1fr);
+    grid-template-areas:
+      "turn slots slots"
+      ". feedback feedback";
+  }
+
+  :root[data-code-length="5"] .guess-row.is-active {
+    grid-template-columns: 28px 36px 36px minmax(0, 1fr);
+    grid-template-areas:
+      "turn slots slots slots"
+      ". submit clear feedback";
+  }
+
+  :root[data-code-length="5"] .slots {
+    gap: 9px;
   }
 
   .feedback {
@@ -707,6 +727,18 @@ h2 {
     grid-template-columns: 24px max-content 34px 34px;
   }
 
+  :root[data-code-length="5"] .guess-row {
+    grid-template-columns: 24px max-content minmax(0, 1fr);
+  }
+
+  :root[data-code-length="5"] .guess-row.is-active {
+    grid-template-columns: 24px 34px 34px minmax(0, 1fr);
+  }
+
+  :root[data-code-length="5"] .slots {
+    gap: 8px;
+  }
+
   .submit-button,
   .clear-button {
     width: 34px;
@@ -743,8 +775,8 @@ h2 {
   }
 
   .difficulty-button {
-    min-width: 58px;
-    padding: 0 7px;
-    font-size: 0.86rem;
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 0.76rem;
   }
 }

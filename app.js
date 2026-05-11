@@ -14,7 +14,12 @@
 
   const CODE_LENGTH = 4;
   const DEFAULT_DIFFICULTY = "medium";
-  const DIFFICULTIES = new Set(["medium", "hard"]);
+  const DIFFICULTY_SETTINGS = {
+    medium: { codeLength: CODE_LENGTH, positionalHints: true },
+    hard: { codeLength: CODE_LENGTH, positionalHints: false },
+    extreme: { codeLength: 5, positionalHints: false }
+  };
+  const DIFFICULTIES = new Set(Object.keys(DIFFICULTY_SETTINGS));
   const STORAGE_KEY_PREFIX = "mastermind-best-score-v1";
 
   function createSecret(length = CODE_LENGTH) {
@@ -63,6 +68,18 @@
     return value === 1 ? singular : pluralText;
   }
 
+  function difficultySettings(difficulty) {
+    return DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS[DEFAULT_DIFFICULTY];
+  }
+
+  function codeLengthFor(difficulty) {
+    return difficultySettings(difficulty).codeLength;
+  }
+
+  function emptyGuessFor(difficulty) {
+    return Array(codeLengthFor(difficulty)).fill(null);
+  }
+
   if (typeof module !== "undefined") {
     module.exports = { COLOURS, CODE_LENGTH, createSecret, scoreGuess };
   }
@@ -84,8 +101,8 @@
 
   const state = {
     difficulty: DEFAULT_DIFFICULTY,
-    secret: createSecret(),
-    currentGuess: Array(CODE_LENGTH).fill(null),
+    secret: createSecret(codeLengthFor(DEFAULT_DIFFICULTY)),
+    currentGuess: emptyGuessFor(DEFAULT_DIFFICULTY),
     selectedColour: null,
     turns: [],
     solved: false
@@ -106,8 +123,8 @@
   }
 
   function startNewGame() {
-    state.secret = createSecret();
-    state.currentGuess = Array(CODE_LENGTH).fill(null);
+    state.secret = createSecret(codeLengthFor(state.difficulty));
+    state.currentGuess = emptyGuessFor(state.difficulty);
     state.selectedColour = null;
     state.turns = [];
     state.solved = false;
@@ -165,6 +182,9 @@
   }
 
   function renderGame() {
+    document.documentElement.dataset.difficulty = state.difficulty;
+    document.documentElement.dataset.codeLength = String(codeLengthFor(state.difficulty));
+    document.documentElement.style.setProperty("--code-length", String(codeLengthFor(state.difficulty)));
     renderPaletteSelection();
     renderDifficultySelection();
     renderSecret();
@@ -227,7 +247,7 @@
       elements.board.appendChild(createGuessRow({
         turnNumber: state.turns.length + 1,
         guess: state.currentGuess,
-        marks: Array(CODE_LENGTH).fill("blank"),
+        marks: Array(codeLengthFor(state.difficulty)).fill("blank"),
         active: true
       }));
     }
@@ -260,7 +280,7 @@
         peg.style.setProperty("--peg", colour.hex);
         peg.setAttribute("aria-hidden", "true");
 
-        if (!active && state.difficulty === "medium") {
+        if (!active && difficultySettings(state.difficulty).positionalHints) {
           applyMediumHint(peg, slot, marks[slotIndex]);
         }
 
@@ -311,7 +331,7 @@
   function createSlotLabel(slotIndex, colourName, mark, active) {
     const label = `Slot ${slotIndex + 1}, ${colourName}`;
 
-    if (active || state.difficulty !== "medium") {
+    if (active || !difficultySettings(state.difficulty).positionalHints) {
       return label;
     }
 
@@ -544,7 +564,7 @@
   }
 
   function clearCurrentGuess() {
-    state.currentGuess = Array(CODE_LENGTH).fill(null);
+    state.currentGuess = emptyGuessFor(state.difficulty);
     renderGame();
   }
 
@@ -560,7 +580,7 @@
     const guess = [...state.currentGuess];
     const marks = scoreGuess(guess, state.secret);
     state.turns.push({ guess, marks });
-    state.currentGuess = Array(CODE_LENGTH).fill(null);
+    state.currentGuess = emptyGuessFor(state.difficulty);
 
     if (marks.every((mark) => mark === "check")) {
       state.solved = true;
