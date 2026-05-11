@@ -295,11 +295,11 @@ h2 {
 
 .secret-row {
   display: grid;
-  grid-template-columns: 80px 1fr;
+  grid-template-columns: 46px max-content 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-height: 78px;
-  padding: 12px;
+  padding: 11px;
   border-radius: 8px;
   box-shadow: none;
   background: var(--surface);
@@ -315,6 +315,7 @@ h2 {
 
 .secret-pegs {
   display: grid;
+  grid-column: 2;
   grid-template-columns: repeat(var(--code-length), var(--slot-size));
   gap: 10px;
 }
@@ -617,10 +618,19 @@ h2 {
   }
 
   .secret-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    grid-template-columns: 28px max-content minmax(0, 1fr);
+    gap: 6px;
     min-height: 0;
-    padding: 8px;
+    padding: 6px;
+  }
+
+  .secret-label {
+    grid-column: 1 / -1;
+  }
+
+  .secret-pegs {
+    grid-column: 2 / -1;
+    gap: 12px;
   }
 
   .board {
@@ -677,6 +687,10 @@ h2 {
     gap: 9px;
   }
 
+  :root[data-code-length="5"] .secret-pegs {
+    gap: 9px;
+  }
+
   .feedback {
     grid-area: feedback;
     justify-content: start;
@@ -713,10 +727,6 @@ h2 {
     gap: 12px;
   }
 
-  .secret-pegs {
-    gap: 7px;
-  }
-
   .guess-row {
     grid-template-columns: 24px max-content minmax(48px, 1fr);
     gap: 5px;
@@ -736,6 +746,16 @@ h2 {
   }
 
   :root[data-code-length="5"] .slots {
+    gap: 8px;
+  }
+
+  .secret-row {
+    grid-template-columns: 24px max-content minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px;
+  }
+
+  :root[data-code-length="5"] .secret-pegs {
     gap: 8px;
   }
 
